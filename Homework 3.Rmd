@@ -1,0 +1,106 @@
+---
+title: "Homework 3"
+author: "Nithila Sathiya: ns37382"
+date: "2024-02-04"
+output: pdf_document
+---
+
+```{r global_options, echo=FALSE, message = FALSE}
+knitr::opts_chunk$set(fig.height=3, fig.width=5.5, warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(kableExtra)
+```
+
+# Problem 1
+
+## Part A
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+creatinine <- read.csv("creatinine.csv")
+
+model_creat = lm(creatclear ~ age, data = creatinine)
+creat_growth = coef(model_creat)
+```
+
+Using linear modeling I was able to determine the creatine clearance for a 55 year old is `r 148 - (0.6*55)`. By calculating the correlation coefficient and the y-intercept I found the equation for the creatine clearance which was (148 - (0.6 * x)), x being age. Using the equation the creatine eqation for a 55 year old is 148 - (0.6 * 55).
+
+## Part B
+The creatine clearance decreases 0.6 mL/minute with age. Through linear modeling we were able to determine the equation y = 148 - 0.6x. 148 represented the creatine clearance when the patient is 0 (a newborn) and -0.6 is the rate that the creatine clearance changes as the age (x) changes. 
+
+## Part C
+The predicted creatine clearance for a 40-year-old is `r 148 - (0.6 * 40)` mL/minute and for a 60-year-old it is `r 148 - (0.6 * 60)` mL/minute. The actual creatine clearance for a 40-year-old is 135 mL/minute and for the 60-year-old it is 112 mL/minute. The residual (actual - predicted) for the 40-year- old is `r 135-124` (135-124) and for the 60-year-old is 0 (112-112). This means that the 40-year-old is healthier since their creatine clearance is higher than the expected clearance. The 60-year-old is reaching the expected clearance since their rate matched the expected rate. 
+
+# Problem 2
+
+Beta measures the systematic risk of a companies market portfolio. The beta essentially tells investors the amount of risk they would be taking if they invested in that company and bought their stock. Each 1% increase in the market portfolio represents the percent change in investment return. When a firm has no systematic risk the beta value would be 0. If the beta value is above 1 the company's market portfolio has a high systematic risk, meaning that its investment return is more likely to change drastically based on the overall economic environment. The lower the number goes to 0 the less of a systematic risk it poses. If the beta value is negative (which is rare), the systematic risk of the company acts differently. In an economic setting where majority of the companies are performing poorly, a negative beta value company is likely to flourish. To calculate beta, the linear regression model of the company's market value in comparison to the standard should be found. Then the slope of that model becomes the beta value for that company.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+market <- read.csv("marketmodel.csv")
+
+aapl_model = lm(AAPL ~ SPY, data = market)
+aapl_growth = round(coef(aapl_model), 5)
+aapl_r = round((summary(aapl_model)$r.squared), 3)
+
+goog_model = lm(GOOG ~ SPY, data = market)
+goog_growth = round(coef(goog_model), 5)
+goog_r = round((summary(goog_model)$r.squared), 3)
+
+mrk_model = lm(MRK ~ SPY, data = market)
+mrk_growth = round(coef(mrk_model), 5)
+mrk_r = round((summary(mrk_model)$r.squared), 3)
+
+jnj_model = lm(JNJ ~ SPY, data = market)
+jnj_growth = round(coef(jnj_model), 5)
+jnj_r = round((summary(jnj_model)$r.squared), 3)
+
+wmt_model = lm(WMT ~ SPY, data = market)
+wmt_growth = round(coef(wmt_model), 5)
+wmt_r = round((summary(wmt_model)$r.squared), 3)
+
+tgt_model = lm(TGT ~ SPY, data = market)
+tgt_growth = round(coef(tgt_model), 5)
+tgt_r = round((summary(tgt_model)$r.squared), 3)
+
+Companies <- c("AAPL", "GOOG", "MRK", "JNJ", "WMT", "TGT")
+Alpha_intercept <- c(aapl_growth[1], goog_growth[1], mrk_growth[1], jnj_growth[1], wmt_growth[1], tgt_growth[1])
+Beta_slope <- c(aapl_growth[2], goog_growth[2], mrk_growth[2], jnj_growth[2], wmt_growth[2], tgt_growth[2])
+R_squared <- c(aapl_r, goog_r, mrk_r, jnj_r, wmt_r, tgt_r)
+
+market_df <- data.frame(Companies, Alpha_intercept, Beta_slope, R_squared)
+tibble(market_df)
+```
+The table shows the alpha intercept, the beta slope, and the r-squared value of 6 large companies. The beta value demonstrates the systematic risk of their market portfolio and the r-squared value shows the strength of the relationship betweent the company's stocks and the market comparison (S&P 500).
+
+## Analysis
+Walmart (WMT) poses the least systematic risk since it's beta slope value is the least and closest to 0. This is probably due to the fact that Walmart sells a lot of necessities that, no matter the economic climate, will always be bought. Apple (AAPL), however, poses the highest systematic risk since it's beta slope value is above 1 and the highest. This is likely because Apple specializes in products that are expensive and considered luxurious. In a recession, people are likely to decrease their purchases at expensive companies such as Apple since it isn't considered a luxury.
+
+# Problem 3
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+covid <- read.csv("covid.csv")
+
+italy_covid <- covid[covid$country == "Italy",]
+spain_covid <- covid[covid$country == "Spain",]
+
+model_itcovid = lm(log(deaths) ~ days_since_first_death, data = italy_covid)
+it_growth = coef(model_itcovid)
+it_double = 70 / ((it_growth[2]) * 100)
+
+model_spcovid = lm(log(deaths) ~ days_since_first_death, data = spain_covid)
+sp_growth = coef(model_spcovid)
+sp_double = 70 / ((sp_growth[2]) * 100)
+
+ggplot(covid, aes(x = days_since_first_death, y = deaths)) + geom_line(aes(color = country)) + xlab("Days Since First Death") + ylab("Number of Deaths") + ggtitle("Number of COVID deaths in Italy and Spain")
+```
+
+The estimated growth rate for Italy is `r round((it_growth[2]), 3)` deaths per day and the doubling time is `r round(it_double, 0)` days. The estimated growth rate for Spain is `r round((sp_growth[2]), 3)` deaths per day and the doubling time is `r round(sp_double, 0)` days.
+
+# Problem 4
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+milk <- read.csv("milk.csv")
+
+milk_model = lm(log(sales) ~ log(price), data = milk)
+est_price_elast = round((coef(milk_model)[2]),2)
+```
+
+The estimated price elasticity of demand for milk is `r est_price_elast`. This means that for every 1% the price of milk increase, the likelihood that it is bought decreases by 1.62%. In order to find this number I used the power-law equation Q = KP^B. To calculate it through R, I used the linear modeling function in base R and taking the natural log of each part of the equation to make (log(Q) = log(K) + Blog(P)). Then, we were able to find K which was 4.72 and B which was -1.62 (the estimated price elasticity).
